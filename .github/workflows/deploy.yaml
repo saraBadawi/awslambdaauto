@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.11  # Set Python version to match Lambda runtime
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -30,4 +30,4 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name CounterFunction \
-            --zip-file fileb://lambdaauto.py  # Replace with your actual function name
+            --zip-file fileb://backendautomated/lambdaauto.zip  # Replace with your actual function name
