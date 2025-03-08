@@ -30,4 +30,5 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name CounterFunction \
-            --zip-file fileb://lambdaauto.zip  # Replace with your actual function name
+            --zip-file fileb://lambdaauto.zip \
+            --region us-east-1
