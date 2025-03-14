@@ -47,6 +47,6 @@ jobs:
             --function-name CounterFunction \
             --runtime python3.11 \
             --handler lambda_function.lambda_handler \
-            --role arn:aws:iam::123456789012:role/lambda_exec_role \
+            --role arn:aws:iam::007642535935:role/lambda_exec_role \
             --zip-file fileb://lambda_function_payload.zip \
             --region us-east-1
