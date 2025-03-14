@@ -1,33 +1,38 @@
-name: Deploy Python Lambda
+name: Deploy Lambda Function
 
 on:
   push:
     branches:
-      - main  # Runs when code is pushed to main branch
+      - main  # Trigger the workflow on push to the main branch
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Uses an Ubuntu runner
+    runs-on: ubuntu-latest  # Use an Ubuntu runner
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v4  # Clones the repository
+        uses: actions/checkout@v4
 
+      # Step 2: Set up Python (if your Lambda function uses Python)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11  # Set Python version to match Lambda runtime
+          python-version: 3.11  # Match the Lambda runtime version
 
+      # Step 3: Install dependencies (if any)
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -t .  # Install dependencies into the current directory (if any)
+          pip install -r requirements.txt -t .  # Install dependencies into the current directory
 
-      - name: Zip the Lambda function
+      # Step 4: Zip the Lambda function code
+      - name: Zip Lambda function
         run: |
-          zip -r lambda_function_payload.zip lambdaauto.py  # Zip only the Lambda function code
+          zip -r lambda_function_payload.zip lambda_function.py  # Zip the Lambda function code
           # If you have additional files, include them in the zip command
 
+      # Step 5: Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -35,16 +40,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  # Change this to your AWS region
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0  # Use the latest stable version
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Plan
-        run: terraform plan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+      # Step 6: Deploy the Lambda function
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name CounterFunction \
+            --zip-file fileb://lambdaauto.zip \
+            --region us-east-1
