@@ -45,5 +45,5 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name CounterFunction \
-            --zip-file fileb://lambdaauto.zip \
+            --zip-file fileb://lambda_function_payload.zip \
             --region us-east-1
