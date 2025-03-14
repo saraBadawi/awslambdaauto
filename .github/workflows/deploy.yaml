@@ -43,10 +43,10 @@ jobs:
       # Step 6: Deploy the Lambda function
       - name: Deploy Lambda function
         run: |
-          aws lambda create-function \
+            aws lambda create-function \
             --function-name CounterFunction \
             --runtime python3.11 \
             --handler lambda_function.lambda_handler \
-            --role arn:aws:iam::123456789012:role/lambda_exec_role \  # Replace with your IAM role ARN
+            --role arn:aws:iam::123456789012:role/lambda_exec_role \
             --zip-file fileb://lambda_function_payload.zip \
             --region us-east-1
