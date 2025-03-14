@@ -1,76 +1,50 @@
-name: Deploy Lambda Function
+name: Deploy Python Lambda
+
 on:
   push:
     branches:
-      - main
-
-env:
-  AWS_REGION: us-east-1
-  LAMBDA_FUNCTION_NAME: MySimpleLambdaFunction
-  AWS_ROLE_TO_ASSUME: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_LAMBDA_ROLE }}
-
-permissions:
-  id-token: write
-  contents: read
+      - main  # Runs when code is pushed to main branch
 
 jobs:
   deploy:
-    name: Deploy Lambda
-    runs-on: ubuntu-latest
-    environment: production
+    runs-on: ubuntu-latest  # Uses an Ubuntu runner
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4  # Clones the repository
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: 3.11  # Set Python version to match Lambda runtime
 
       - name: Install dependencies
         run: |
-          pip install awscli pytest
-
-      - name: Run unit tests
-        run: |
-          python -m unittest discover -s . -p "test_*.py"
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActionsLambdaDeployment
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -t .  # Install dependencies into the current directory (if any)
 
       - name: Zip the Lambda function
-        run: zip function.zip lambda_function.py
-
-      - name: Check if Lambda function exists
-        id: check_lambda
-        continue-on-error: true
         run: |
-          if aws lambda get-function --function-name ${{ env.LAMBDA_FUNCTION_NAME }}; then
-            echo "LAMBDA_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "LAMBDA_EXISTS=false" >> $GITHUB_ENV
-          fi
+          zip -r lambda_function_payload.zip lambda_function.py  # Zip only the Lambda function code
+          # If you have additional files, include them in the zip command
 
-      - name: Create or Update Lambda function
-        run: |
-          if [ "$LAMBDA_EXISTS" == "false" ]; then
-            echo "Creating Lambda function..."
-            aws lambda create-function \
-              --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
-              --runtime python3.8 \
-              --role ${{ env.AWS_ROLE_TO_ASSUME }} \
-              --handler lambda_function.lambda_handler \
-              --zip-file fileb://function.zip
-          else
-            echo "Updating Lambda function..."
-            aws lambda update-function-code \
-              --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
-              --zip-file fileb://lambdaauto.zip --publish
-          fi
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Change this to your AWS region
 
-      - name: Clean up
-        run: rm lambdaauto.zip
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0  # Use the latest stable version
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
