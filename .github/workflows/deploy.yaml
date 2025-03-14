@@ -25,7 +25,7 @@ jobs:
 
       - name: Zip the Lambda function
         run: |
-          zip -r lambda_function_payload.zip lambda_function.py  # Zip only the Lambda function code
+          zip -r lambda_function_payload.zip lambdaauto.py  # Zip only the Lambda function code
           # If you have additional files, include them in the zip command
 
       - name: Configure AWS credentials
